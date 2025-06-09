@@ -1,0 +1,94 @@
+Configuración Arduino 
+ Bibliotecas Requeridas
+
+
+#include "esp_camera.h"  // Manejo de la cámara
+#include <WiFi.h>        // Conexión WiFi
+
+
+ Modelo de Cámara
+
+
+#define CAMERA_MODEL_AI_THINKER  // Usado para el ESP32-CAM AI-Thinker
+Configuración Wi Fi
+const char ssid = "*******";      
+
+const char *password = "******";     
+
+
+Configuración de la Cámara
+
+
+camera_config_t config;
+config.ledc_channel = LEDC_CHANNEL_0;  // Canal PWM para el reloj
+config.ledc_timer = LEDC_TIMER_0;      // Temporizador para el reloj
+config.pin_d0 = Y2_GPIO_NUM;           // Pin de datos 0
+// ... (resto de pines definidos en `camera_pins.h`)
+config.xclk_freq_hz = 20000000;        // Frecuencia del reloj (20MHz)
+config.frame_size = FRAMESIZE_UXGA;    // Resolución (1600x1200)
+config.pixel_format = PIXFORMAT_JPEG;  // Formato de imagen (JPEG para streaming)
+config.fb_count = 1;                   // Número de buffers de imagen
+
+
+Manejo de PSRAM
+
+
+if (psramFound()) {  // Si hay PSRAM, mejora la calidad
+  config.jpeg_quality = 10;  // Calidad JPEG (10-63, menor = mejor)
+  config.fb_count = 2;       // Dos buffers para mejor rendimiento
+  config.grab_mode = CAMERA_GRAB_LATEST;  // Siempre toma el último frame
+} else {  // Sin PSRAM, reduce la resolución
+  config.frame_size = FRAMESIZE_SVGA;  // 800x600
+  config.fb_location = CAMERA_FB_IN_DRAM;  // Usa RAM interna
+}
+
+
+Inicialización de la Cámara
+
+
+esp_err_t err = esp_camera_init(&config);
+if (err != ESP_OK) {
+  Serial.printf("Error al iniciar la cámara: 0x%x", err);
+  return;
+}
+
+
+Ajustes del Sensor
+
+
+sensor_t *s = esp_camera_sensor_get();
+s->set_vflip(s, 1);       // Voltea la imagen verticalmente
+s->set_brightness(s, 1);  // Ajusta brillo (0-2)
+s->set_saturation(s, -2); // Reduce saturación (-2 a 2)
+s->set_framesize(s, FRAMESIZE_QVGA);  // Baja resolución inicial (320x240)
+
+
+Conexión WiFi
+
+
+WiFi.begin(ssid, password);
+WiFi.setSleep(false);  // Evita que el WiFi entre en modo bajo consumo
+
+Serial.print("Conectando a WiFi...");
+while (WiFi.status() != WL_CONNECTED) {
+  delay(500);
+  Serial.print(".");
+}
+Serial.println("\nWiFi conectado");
+Serial.print("IP: ");
+Serial.println(WiFi.localIP());  // Muestra la dirección IP asignada
+
+
+Servidor de Streaming
+
+
+startCameraServer();  // Inicia el servidor web en el puerto 80
+Función loop()
+
+
+void loop() {
+  delay(10000);  // No hace nada; el servidor corre en segundo plano
+}
+
+
+
