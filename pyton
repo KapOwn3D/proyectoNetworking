@@ -1,0 +1,74 @@
+configuración python 
+Bibliotecas principales
+
+
+from flask import Flask, render_template, Response, jsonify, request
+import cv2  # Procesamiento de imágenes
+import mediapipe as mp  # Detección de postura
+import math  # Cálculos geométricos
+import threading  # Ejecución en paralelo
+import time  # Manejo de tiempos
+
+
+Variables:
+
+
+estado_postura
+angulo_actual
+frame_actual
+tiempo_mala_postura
+Estado actual ("correcta", "incorrecta".)
+Ángulo calculado entre hombros y caderas
+Último frame procesado en formato JPEG
+Tiempo acumulado en mala postura
+Configuración MediaPipe
+
+
+mp_pose = mp.solutions.pose
+pose = mp_pose.Pose(
+    static_image_mode=False,
+    min_detection_confidence=0.5,
+    model_complexity=1
+)
+
+
+Funciones Clave
+
+
+   def calcular_angulo_vertical(p1, p2):
+    Calcula el ángulo entre dos puntos en grados
+   dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+    return abs(math.degrees(math.atan2(dx, dy)))
+
+
+Transiciones de Estado
+
+
+if estado_postura == "incorrecta" and (time.time() - tiempo_mala_postura) >= 5:
+    # Activar notificación
+elif estado_postura == "correcta":
+    # Reiniciar contador
+
+
+ejemplo de Respuesta JSON
+
+
+{
+    "postura": "incorrecta",
+    "angulo": 15.2,
+    "sonar_inicio": false,
+    "mensaje_levantado": true
+}
+
+
+ Configuración ESP32-CAM
+
+
+// En el sketch de Arduino:
+#define CAMERA_MODEL_AI_THINKER
+const char* ssid = "TU_RED";
+const char* password = "TU_CONTRASEÑA";
+startCameraServer();  // Inicia servidor en puerto 81
+
+
+
