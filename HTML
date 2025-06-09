@@ -1,0 +1,106 @@
+configuración HTML Y JS 
+Sección HEAD
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Postura Inteligente</title>
+  <!-- Estilos CSS -->
+  <style>...</style>
+</head>
+
+
+Sección BODY
+
+
+<body>
+  <div class="container">
+    <!-- Elementos de la interfaz -->
+    <img src="/video_feed">  <!-- Stream de video -->
+    <h2 id="estado">Estado: cargando...</h2>  <!-- Indicador de estado -->
+    <h3 id="angulo">Ángulo: --</h3>  <!-- Ángulo actual -->
+    <div id="alerta" class="alerta"></div>  <!-- Mensajes de alerta -->
+    <div id="cronometro">⏱️ Tiempo sentado: 0s</div>  <!-- Cronómetro -->
+    <button onclick="resetInicio()"> Resetear Inicio</button>  <!-- Botón de control -->
+  </div>
+
+  <!-- Elementos de audio -->
+  <audio id="alertaAudio" src="alerta.mp3"></audio>
+  <audio id="comebackAudio" src="comeback.mp3"></audio>
+  <audio id="breakAudio" src="breaktime.mp3"></audio>
+  <audio id="startAudio" src="start.mp3"></audio>
+
+  <!-- Script JavaScript -->
+  <script>...</script>
+</body>
+
+
+Variables 
+let audio = null; // Elementos de audio
+let segundosSentado = 0; // Contador de tiempo
+let intervaloCronometro = null; // Referencia al intervalo
+let ultimaBreak = 0; // Control de repetición de audio
+
+
+Funciones principales 
+
+actualizar estado()
+async function actualizarEstado() {
+  // 1. Obtiene datos del servidor
+  const res = await fetch("/estado");
+  const data = await res.json();
+
+  // 2. Actualiza la interfaz
+  document.getElementById("estado").innerText = "Estado: " + data.postura;
+  document.getElementById("angulo").innerText = "Ángulo: " + data.angulo + "°";
+
+  // 3. Lógica del cronómetro
+  manejarCronometro(data.postura);
+
+  // 4. Gestión de notificaciones
+  mostrarNotificaciones(data);
+}
+
+
+manejar cronometro 
+async function actualizarEstado() {
+  // 1. Obtiene datos del servidor
+  const res = await fetch("/estado");
+  const data = await res.json();
+
+  // 2. Actualiza la interfaz
+  document.getElementById("estado").innerText = "Estado: " + data.postura;
+  document.getElementById("angulo").innerText = "Ángulo: " + data.angulo + "°";
+
+  // 3. Lógica del cronómetro
+  manejarCronometro(data.postura);
+
+  // 4. Gestión de notificaciones
+  mostrarNotificaciones(data);
+}
+
+
+mostrar notificaciones 
+// Mapeo de estados a mensajes
+const mensajes = {
+  "incorrecta": "⚠️ ¡Corrige tu postura!",
+  "ausente": "👤 ¡Te fuiste! Vuelve por favor.",
+  "break": "🕒 ¡Hora de levantarse!"
+};
+
+// Reproduce audio según estado
+if (estado === "incorrecta") reproducir(audio);
+if (sonar_comeback) reproducir(comebackAudio);
+
+
+control audio 
+function reproducir(audioElement) {
+  audioElement.pause();
+  audioElement.currentTime = 0;
+  audioElement.play();
+}
+
+
+
+
